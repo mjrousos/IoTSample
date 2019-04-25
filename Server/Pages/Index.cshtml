@@ -1,0 +1,84 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Device User Manager</h1>
+    <div class="row">
+        <div class="col-2">
+            <label for="selectedDeviceId">Available Devices</label>
+        </div>
+        <div class="col-2">
+            <select id="selectedDeviceId" class="form-control" onchange="DeviceChanged()">
+                @foreach (var deviceId in Model.AvailableDevices)
+                {
+                    <option value="">-</option>
+                    if (deviceId.Equals(Model.DeviceId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        <option value="@deviceId" selected="selected">@deviceId</option>
+                    }
+                    else
+                    {
+                        <option value="@deviceId">@deviceId</option>
+                    }
+                }
+            </select>
+        </div>
+    </div>
+    <div style="display:@(string.IsNullOrWhiteSpace(Model.DeviceId)?"none":"block")">
+        <div class="row">
+            <h3>Device Users</h3>
+            <div class="col-1 offset-7">
+                @{
+                    var routeData = new Dictionary<string, string>
+                    {
+                       { "DeviceId", Model.DeviceId }
+                    };
+                }
+                <a asp-page="AddUser" asp-all-route-data="routeData" class="btn btn-outline-primary">Add User</a>
+            </div>
+        </div>
+        <div class="row">
+            @if (Model.DeviceUsers == null)
+            {
+                <h4>Unavailable - Device offline</h4>
+            }
+            else
+            {
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <td>User ID</td>
+                            <td>Username</td>
+                            <td />
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.DeviceUsers)
+                        {
+                            <tr>
+                                <td>@user.Key</td>
+                                <td>@user.Value</td>
+                                <td><a href="#" class="btn btn-default">Delete</a></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+    function DeviceChanged() {
+        var selector = document.getElementById('selectedDeviceId');
+
+        // Can't append DeviceID on the server-side since it isn't known yet
+        var url = '@Html.Raw(Url.Page("Index", new { DeviceId = string.Empty}))';
+        window.location(url + '?DeviceId='+ selector.options[selector.selectedIndex].value);
+    }
+    </script>
+}
